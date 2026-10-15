@@ -101,6 +101,17 @@
                 android:textStyle="bold"
                 android:padding="14dp" />
 
+    <Button
+    android:id="@+id/statsButton"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:text="📊 VIEW STATISTICS"
+    android:backgroundTint="#1A2A4A"
+    android:textColor="#00D4FF"
+    android:textStyle="bold"
+    android:padding="14dp" />
+
             <!-- رسالة التهدئة -->
             <LinearLayout
                 android:id="@+id/calmingCard"
