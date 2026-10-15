@@ -12,17 +12,18 @@
         android:layout_height="wrap_content"
         android:text="SoulSync Protocol"
         android:textColor="#00D4FF"
-        android:textSize="30sp"
+        android:textSize="28sp"
         android:textStyle="bold" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:text="Patent No. 190655"
         android:textColor="#8899AA"
-        android:textSize="14sp" />
+        android:textSize="12sp" />
 
+    <!-- حالة المراقبة -->
     <TextView
         android:id="@+id/statusText"
         android:layout_width="wrap_content"
@@ -30,9 +31,46 @@
         android:layout_marginTop="32dp"
         android:text="Press below to start monitoring"
         android:textColor="#FFFFFF"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:gravity="center" />
 
+    <!-- الرقم الحي -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Rebound Metric"
+        android:textColor="#8899AA"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/reboundText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="0.00"
+        android:textColor="#00D4FF"
+        android:textSize="56sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="m/s²"
+        android:textColor="#8899AA"
+        android:textSize="14sp" />
+
+    <!-- مؤشر الإجهاد -->
+    <TextView
+        android:id="@+id/stressText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Stress Index: --"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp" />
+
+    <!-- الزر -->
     <Button
         android:id="@+id/startButton"
         android:layout_width="match_parent"
@@ -47,9 +85,9 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         android:text="Runs silently in the background.\nLearns your baseline in the first hour."
         android:textColor="#8899AA"
-        android:textSize="12sp"
+        android:textSize="11sp"
         android:gravity="center" />
 </LinearLayout>
