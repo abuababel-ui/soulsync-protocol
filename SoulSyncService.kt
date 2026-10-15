@@ -12,7 +12,9 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import kotlin.math.abs
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 class SoulSyncService : Service(), SensorEventListener {
 
@@ -27,19 +29,36 @@ class SoulSyncService : Service(), SensorEventListener {
     private var learningStartTime: Long = 0
     private val learningDuration = 60L * 60L * 1000L
 
+    private var lastCalmingTime: Long = 0
+    private val calmingCooldown = 5L * 60L * 1000L
+    private val spikeThreshold = 2.5f
+
+    private val calmingMessages = listOf(
+        "إهدأ يا صديقي. كل شيء سيكون على ما يرام. 🌿",
+        "ما رأيك بتناول كأس من عصير الليمون؟ 🍋",
+        "هل أنت منزعج؟ ما رأيك بوضع الهاتف جانباً وعمل تمرين تنفس؟ 🧘",
+        "خذ نفساً عميقاً... أنت بخير. 💙",
+        "توقف لحظة. اشرب بعض الماء واسترخِ. 💧",
+        "لا شيء يستحق كل هذا التوتر. خذ استراحة قصيرة. ☕",
+        "ما رأيك بأخذ تسعين دقيقة نوم؟ فهي دورة كاملة لاستعادة نشاطك البدني والذهني. 😴"
+    )
+
     companion object {
         private const val CHANNEL_ID = "soulsync_channel"
+        private const val CALMING_CHANNEL_ID = "soulsync_calming"
         private const val NOTIF_ID = 1001
+        private const val CALMING_NOTIF_ID = 2001
         private const val TAG = "SoulSyncService"
         private const val PREFS = "soulsync_prefs"
         private const val KEY_LEARNING_START = "learning_start"
         private const val KEY_BASELINE = "baseline_tremor"
+        private const val KEY_STDDEV = "baseline_stddev"
         private const val KEY_LEARNING_DONE = "learning_done"
     }
 
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
+        createNotificationChannels()
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SoulSync::Lock")
@@ -87,7 +106,52 @@ class SoulSyncService : Service(), SensorEventListener {
             } else {
                 finalizeLearning(prefs)
             }
+        } else {
+            checkForAnomaly(prefs, now)
         }
+    }
+
+    private fun checkForAnomaly(prefs: android.content.SharedPreferences, now: Long) {
+        val baseline = prefs.getFloat(KEY_BASELINE, 0.05f)
+        val stdDev = prefs.getFloat(KEY_STDDEV, 0.1f).coerceAtLeast(0.01f)
+
+        val deviation = abs(filteredValue - baseline) / stdDev
+
+        if (deviation >= spikeThreshold) {
+            if (now - lastCalmingTime > calmingCooldown) {
+                lastCalmingTime = now
+                showCalmingMessage()
+            }
+        }
+    }
+
+    private fun showCalmingMessage() {
+        val message = calmingMessages[Random.nextInt(calmingMessages.size)]
+
+        val broadcastIntent = Intent("com.soulsync.CALMING_MESSAGE")
+        broadcastIntent.putExtra("message", message)
+        sendBroadcast(broadcastIntent)
+
+        val intent = Intent(this, MainActivity::class.java)
+        val pi = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val notification = NotificationCompat.Builder(this, CALMING_CHANNEL_ID)
+            .setContentTitle("SoulSync: تهدئة")
+            .setContentText(message)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+            .setSmallIcon(android.R.drawable.ic_menu_compass)
+            .setContentIntent(pi)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .build()
+
+        val nm = getSystemService(NotificationManager::class.java)
+        nm.notify(CALMING_NOTIF_ID, notification)
+        Log.i(TAG, "Calming message shown: $message")
     }
 
     private fun finalizeLearning(prefs: android.content.SharedPreferences) {
@@ -97,27 +161,42 @@ class SoulSyncService : Service(), SensorEventListener {
             return
         }
         val avg = learningSamples.average().toFloat()
+        val variance = learningSamples.map { (it - avg) * (it - avg) }.average()
+        val stdDev = sqrt(variance).toFloat().coerceAtLeast(0.05f)
+
         prefs.edit()
             .putFloat(KEY_BASELINE, avg)
+            .putFloat(KEY_STDDEV, stdDev)
             .putBoolean(KEY_LEARNING_DONE, true)
             .apply()
         learningSamples.clear()
         updateNotification("Baseline learned. Monitoring active.")
-        Log.i(TAG, "Baseline learned: $avg")
+        Log.i(TAG, "Baseline learned: avg=$avg, stdDev=$stdDev")
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
-    private fun createNotificationChannel() {
+    private fun createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val ch = NotificationChannel(
-                CHANNEL_ID, "SoulSync Protocol",
+            val nm = getSystemService(NotificationManager::class.java)
+
+            val monitoring = NotificationChannel(
+                CHANNEL_ID, "SoulSync Monitoring",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = "Bio-behavioral monitoring"
                 setShowBadge(false)
             }
-            (getSystemService(NotificationManager::class.java)).createNotificationChannel(ch)
+            nm.createNotificationChannel(monitoring)
+
+            val calming = NotificationChannel(
+                CALMING_CHANNEL_ID, "SoulSync Calming Prompts",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Calming messages when stress is detected"
+                enableVibration(true)
+            }
+            nm.createNotificationChannel(calming)
         }
     }
 
