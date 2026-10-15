@@ -67,6 +67,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         calmingCard = findViewById(R.id.calmingCard)
         calmingText = findViewById(R.id.calmingText)
         val startButton = findViewById<Button>(R.id.startButton)
+        val statsButton = findViewById<Button>(R.id.statsButton)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
@@ -96,7 +97,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             startButton.isEnabled = false
             monitorStatus.text = "Monitoring..."
         }
-
+statsButton.setOnClickListener {
+    startActivity(Intent(this, StatsActivity::class.java))
+}
         // تسجيل مستقبل رسائل التهدئة
         val filter = IntentFilter("com.soulsync.CALMING_MESSAGE")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
