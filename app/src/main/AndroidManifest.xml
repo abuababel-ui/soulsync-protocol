@@ -11,7 +11,8 @@
         android:allowBackup="false"
         android:icon="@android:drawable/ic_menu_compass"
         android:label="SoulSync"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
