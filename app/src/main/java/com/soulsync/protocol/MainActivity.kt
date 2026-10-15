@@ -1,8 +1,10 @@
 package com.soulsync.protocol
 
 import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -16,6 +18,7 @@ import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -28,16 +31,29 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private lateinit var reboundText: TextView
     private lateinit var stressText: TextView
-    private lateinit var statusText: TextView
     private lateinit var countdownText: TextView
-    private lateinit var learningDescText: TextView
+    private lateinit var monitorStatus: TextView
+    private lateinit var liveGraph: LiveGraphView
+    private lateinit var calmingCard: LinearLayout
+    private lateinit var calmingText: TextView
 
     private var filteredValue = 0f
     private val alpha = 0.9f
     private val deadZone = 0.02f
 
     private val uiHandler = Handler(Looper.getMainLooper())
-    private val LEARNING_DURATION_MS = 60L * 60L * 1000L // ساعة واحدة
+    private val LEARNING_DURATION_MS = 60L * 60L * 1000L
+
+    private val calmingReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val msg = intent?.getStringExtra("message") ?: return
+            calmingText.text = msg
+            calmingCard.visibility = LinearLayout.VISIBLE
+            uiHandler.postDelayed({
+                calmingCard.visibility = LinearLayout.GONE
+            }, 8000)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,12 +61,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         reboundText = findViewById(R.id.reboundText)
         stressText = findViewById(R.id.stressText)
-        statusText = findViewById(R.id.statusText)
         countdownText = findViewById(R.id.countdownText)
-        learningDescText = findViewById(R.id.learningDescText)
+        monitorStatus = findViewById(R.id.monitorStatus)
+        liveGraph = findViewById(R.id.liveGraph)
+        calmingCard = findViewById(R.id.calmingCard)
+        calmingText = findViewById(R.id.calmingText)
         val startButton = findViewById<Button>(R.id.startButton)
 
-        // صلاحيات
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -62,7 +79,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         requestBatteryExemption()
 
-        // المستشعرات
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
         sensor?.let {
@@ -78,6 +94,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
             startButton.text = "MONITORING ACTIVE"
             startButton.isEnabled = false
+            monitorStatus.text = "Monitoring..."
+        }
+
+        // تسجيل مستقبل رسائل التهدئة
+        val filter = IntentFilter("com.soulsync.CALMING_MESSAGE")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(calmingReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(calmingReceiver, filter)
         }
 
         uiHandler.post(statusUpdater)
@@ -88,33 +113,19 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val prefs = getSharedPreferences("soulsync_prefs", MODE_PRIVATE)
             val learningStart = prefs.getLong("learning_start", 0L)
             val learningDone = prefs.getBoolean("learning_done", false)
-            val baseTremor = prefs.getFloat("baseline_tremor", 0f)
 
-            if (learningStart == 0L) {
-                // لم يبدأ بعد
-                statusText.text = "Ready to learn your language"
-                countdownText.visibility = TextView.GONE
-                learningDescText.visibility = TextView.GONE
-            } else if (!learningDone) {
-                // قيد التعلم
+            if (learningStart != 0L && !learningDone) {
                 val elapsed = System.currentTimeMillis() - learningStart
                 val remaining = (LEARNING_DURATION_MS - elapsed).coerceAtLeast(0L)
-
                 val minutes = remaining / 60000
                 val seconds = (remaining % 60000) / 1000
-                countdownText.text = String.format("%02d:%02d", minutes, seconds)
+                countdownText.text = "🧠 Learning your language: ${String.format("%02d:%02d", minutes, seconds)}"
                 countdownText.visibility = TextView.VISIBLE
-                learningDescText.visibility = TextView.VISIBLE
-
-                statusText.text = "🧠 Learning your unique behavioral language..."
-            } else {
-                // انتهى التعلم
-                statusText.text = "✅ Baseline learned. SoulSync understands you."
-                countdownText.text = "READY"
-                countdownText.textSize = 32f
+            } else if (learningDone) {
+                countdownText.text = "✅ Baseline learned. SoulSync understands you."
                 countdownText.visibility = TextView.VISIBLE
-                learningDescText.visibility = TextView.GONE
             }
+
             uiHandler.postDelayed(this, 1000)
         }
     }
@@ -129,8 +140,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val cleaned = if (magnitude < deadZone) 0f else magnitude
         filteredValue = alpha * filteredValue + (1 - alpha) * cleaned
 
-        reboundText.text = String.format("%.2f", filteredValue)
+        // تحديث الرقم الحي
+        reboundText.text = String.format("Rebound: %.2f ms", filteredValue)
 
+        // إضافة نقطة للرسم البياني
+        liveGraph.addPoint(filteredValue)
+
+        // حساب الإجهاد
         val prefs = getSharedPreferences("soulsync_prefs", MODE_PRIVATE)
         val base = prefs.getFloat("baseline_tremor", 0f)
         val stdDev = prefs.getFloat("baseline_stddev", 0.1f).coerceAtLeast(0.01f)
@@ -176,6 +192,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
         uiHandler.removeCallbacks(statusUpdater)
+        try { unregisterReceiver(calmingReceiver) } catch (_: Exception) {}
     }
 
     private fun requestBatteryExemption() {
