@@ -29,12 +29,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var reboundText: TextView
     private lateinit var stressText: TextView
     private lateinit var statusText: TextView
+    private lateinit var countdownText: TextView
+    private lateinit var learningDescText: TextView
 
     private var filteredValue = 0f
     private val alpha = 0.9f
     private val deadZone = 0.02f
 
     private val uiHandler = Handler(Looper.getMainLooper())
+    private val LEARNING_DURATION_MS = 60L * 60L * 1000L // ساعة واحدة
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,9 +46,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         reboundText = findViewById(R.id.reboundText)
         stressText = findViewById(R.id.stressText)
         statusText = findViewById(R.id.statusText)
+        countdownText = findViewById(R.id.countdownText)
+        learningDescText = findViewById(R.id.learningDescText)
         val startButton = findViewById<Button>(R.id.startButton)
 
-        // طلب صلاحيات الإشعارات
+        // صلاحيات
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -57,7 +62,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         requestBatteryExemption()
 
-        // بدء العرض الحي
+        // المستشعرات
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
         sensor?.let {
@@ -71,27 +76,44 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             } else {
                 startService(intent)
             }
-            statusText.text = "Running in background - Silent learning (1 hour)"
             startButton.text = "MONITORING ACTIVE"
             startButton.isEnabled = false
         }
 
-        // تحديث حالة المراقبة كل ثانية
         uiHandler.post(statusUpdater)
     }
 
     private val statusUpdater = object : Runnable {
         override fun run() {
             val prefs = getSharedPreferences("soulsync_prefs", MODE_PRIVATE)
-            val isLearning = !prefs.getBoolean("learning_done", false)
+            val learningStart = prefs.getLong("learning_start", 0L)
+            val learningDone = prefs.getBoolean("learning_done", false)
             val baseTremor = prefs.getFloat("baseline_tremor", 0f)
 
-            if (isLearning) {
-                if (baseTremor == 0f) {
-                    statusText.text = "Silent learning in progress... (1 hour)"
-                }
+            if (learningStart == 0L) {
+                // لم يبدأ بعد
+                statusText.text = "Ready to learn your language"
+                countdownText.visibility = TextView.GONE
+                learningDescText.visibility = TextView.GONE
+            } else if (!learningDone) {
+                // قيد التعلم
+                val elapsed = System.currentTimeMillis() - learningStart
+                val remaining = (LEARNING_DURATION_MS - elapsed).coerceAtLeast(0L)
+
+                val minutes = remaining / 60000
+                val seconds = (remaining % 60000) / 1000
+                countdownText.text = String.format("%02d:%02d", minutes, seconds)
+                countdownText.visibility = TextView.VISIBLE
+                learningDescText.visibility = TextView.VISIBLE
+
+                statusText.text = "🧠 Learning your unique behavioral language..."
             } else {
-                statusText.text = "Baseline learned. Monitoring active."
+                // انتهى التعلم
+                statusText.text = "✅ Baseline learned. SoulSync understands you."
+                countdownText.text = "READY"
+                countdownText.textSize = 32f
+                countdownText.visibility = TextView.VISIBLE
+                learningDescText.visibility = TextView.GONE
             }
             uiHandler.postDelayed(this, 1000)
         }
@@ -107,10 +129,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val cleaned = if (magnitude < deadZone) 0f else magnitude
         filteredValue = alpha * filteredValue + (1 - alpha) * cleaned
 
-        // تحديث الواجهة
         reboundText.text = String.format("%.2f", filteredValue)
 
-        // حساب مؤشر الإجهاد (تقريبي)
         val prefs = getSharedPreferences("soulsync_prefs", MODE_PRIVATE)
         val base = prefs.getFloat("baseline_tremor", 0f)
         val stdDev = prefs.getFloat("baseline_stddev", 0.1f).coerceAtLeast(0.01f)
@@ -133,6 +153,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     else -> 0xFFFF4444.toInt()
                 }
             )
+        } else {
+            stressText.text = "Stress Index: learning..."
         }
     }
 
