@@ -1,65 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:background="#0B1B3A"
-    android:padding="24dp">
+    android:background="#050E1F">
 
+    <!-- الشبكة العصبية المتحركة -->
+    <com.soulsync.protocol.NeuralNetworkView
+        android:id="@+id/neuralView"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="80dp" />
+
+    <!-- شعار SoulSync -->
     <TextView
+        android:id="@+id/titleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/neuralView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp"
         android:text="SOULSYNC"
         android:textColor="#00D4FF"
-        android:textSize="48sp"
-        android:textStyle="bold" />
+        android:textSize="36sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.15"
+        android:shadowColor="#00D4FF"
+        android:shadowRadius="20"
+        android:shadowDx="0"
+        android:shadowDy="0" />
 
+    <!-- Neuro-Sync AI -->
     <TextView
+        android:id="@+id/subtitleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_below="@id/titleText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="4dp"
         android:text="Neuro-Sync AI"
         android:textColor="#8899AA"
-        android:textSize="16sp" />
+        android:textSize="14sp"
+        android:letterSpacing="0.2" />
 
+    <!-- الشعار العربي -->
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/arabicTagline"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:text="With SoulSync, your phone feels you more than you think..."
+        android:layout_below="@id/subtitleText"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:text="هاتفك يشعر بك أكثر مما تظن..."
         android:textColor="#FFFFFF"
-        android:textSize="15sp"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:textStyle="bold" />
+
+    <!-- الوصف -->
+    <TextView
+        android:id="@+id/descText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/arabicTagline"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:text="The Infrastructure for Converting Touch into Bio-Behavioral Data"
+        android:textColor="#8899AA"
+        android:textSize="11sp"
         android:gravity="center" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
-        android:text="Patent No. 190655"
-        android:textColor="#8899AA"
-        android:textSize="11sp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Invented by Ali Mohammed Ali Saleh"
-        android:textColor="#8899AA"
-        android:textSize="11sp" />
-
+    <!-- شريط التحميل -->
     <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:indeterminateTint="#00D4FF" />
+        android:id="@+id/initProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="220dp"
+        android:layout_height="6dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="120dp"
+        android:progress="40"
+        android:progressTint="#00D4FF"
+        android:progressBackgroundTint="#1A2A4A" />
 
+    <!-- نص الحالة -->
     <TextView
+        android:id="@+id/statusText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="90dp"
         android:text="System Initialization..."
         android:textColor="#8899AA"
-        android:textSize="11sp" />
+        android:textSize="12sp" />
 
-</LinearLayout>
+    <!-- بيانات أسفل الشاشة -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp"
+        android:text="Patent No. 190655\nInvented by Ali Mohammed Ali Saleh"
+        android:textColor="#5A6A7A"
+        android:textSize="10sp"
+        android:gravity="center"
+        android:lineSpacingExtra="4dp" />
+
+</RelativeLayout>
