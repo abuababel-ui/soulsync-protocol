@@ -32,8 +32,8 @@ class SoulSyncService : Service(), SensorEventListener {
 
     // كشف الاضطرابات
     private var lastCalmingTime: Long = 0
-    private val calmingCooldown = 5L * 60L * 1000L // 5 دقائق
-    private val spikeThreshold = 2.5f // عتبة الانحراف
+    private val calmingCooldown = 5L * 60L * 1000L
+    private val spikeThreshold = 2.5f
 
     // رسائل التهدئة
     private val calmingMessages = listOf(
@@ -101,7 +101,6 @@ class SoulSyncService : Service(), SensorEventListener {
         val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
 
         if (!prefs.getBoolean(KEY_LEARNING_DONE, false)) {
-            // مرحلة التعلم
             if (now - learningStartTime < learningDuration) {
                 if (filteredValue > deadZone) {
                     learningSamples.add(filteredValue)
@@ -110,7 +109,6 @@ class SoulSyncService : Service(), SensorEventListener {
                 finalizeLearning(prefs)
             }
         } else {
-            // مرحلة المراقبة والكشف
             checkForAnomaly(prefs, now)
         }
     }
@@ -119,11 +117,9 @@ class SoulSyncService : Service(), SensorEventListener {
         val baseline = prefs.getFloat(KEY_BASELINE, 0.05f)
         val stdDev = prefs.getFloat(KEY_STDDEV, 0.1f).coerceAtLeast(0.01f)
 
-        // حساب الانحراف
         val deviation = abs(filteredValue - baseline) / stdDev
 
         if (deviation >= spikeThreshold) {
-            // تجنب الإزعاج: فترة راحة 5 دقائق
             if (now - lastCalmingTime > calmingCooldown) {
                 lastCalmingTime = now
                 showCalmingMessage()
@@ -152,7 +148,7 @@ class SoulSyncService : Service(), SensorEventListener {
 
         val nm = getSystemService(NotificationManager::class.java)
         nm.notify(CALMING_NOTIF_ID, notification)
-        Log.i(TAG, "Calming message shown: $message (deviation)")
+        Log.i(TAG, "Calming message shown: $message")
     }
 
     private fun finalizeLearning(prefs: android.content.SharedPreferences) {
@@ -181,7 +177,6 @@ class SoulSyncService : Service(), SensorEventListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val nm = getSystemService(NotificationManager::class.java)
 
-            // قناة المراقبة (صامتة)
             val monitoring = NotificationChannel(
                 CHANNEL_ID, "SoulSync Monitoring",
                 NotificationManager.IMPORTANCE_LOW
@@ -191,7 +186,6 @@ class SoulSyncService : Service(), SensorEventListener {
             }
             nm.createNotificationChannel(monitoring)
 
-            // قناة التهدئة (مع صوت واهتزاز)
             val calming = NotificationChannel(
                 CALMING_CHANNEL_ID, "SoulSync Calming Prompts",
                 NotificationManager.IMPORTANCE_HIGH
