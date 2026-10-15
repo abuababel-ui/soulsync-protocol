@@ -1,93 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp"
     android:background="#0B1B3A">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="SoulSync Protocol"
-        android:textColor="#00D4FF"
-        android:textSize="28sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Patent No. 190655"
-        android:textColor="#8899AA"
-        android:textSize="12sp" />
-
-    <!-- حالة المراقبة -->
-    <TextView
-        android:id="@+id/statusText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="Press below to start monitoring"
-        android:textColor="#FFFFFF"
-        android:textSize="14sp"
-        android:gravity="center" />
-
-    <!-- الرقم الحي -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Rebound Metric"
-        android:textColor="#8899AA"
-        android:textSize="12sp" />
-
-    <TextView
-        android:id="@+id/reboundText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="0.00"
-        android:textColor="#00D4FF"
-        android:textSize="56sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="m/s²"
-        android:textColor="#8899AA"
-        android:textSize="14sp" />
-
-    <!-- مؤشر الإجهاد -->
-    <TextView
-        android:id="@+id/stressText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Stress Index: --"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp" />
-
-    <!-- الزر -->
-    <Button
-        android:id="@+id/startButton"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="START MONITORING"
-        android:backgroundTint="#00D4FF"
-        android:textColor="#000000"
-        android:textStyle="bold"
-        android:padding="16dp" />
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Runs silently in the background.\nLearns your baseline in the first hour."
-        android:textColor="#8899AA"
-        android:textSize="11sp"
-        android:gravity="center" />
-</LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SoulSync Protocol"
+            android:textColor="#00D4FF"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Patent No. 190655"
+            android:textColor="#8899AA"
+            android:textSize="12sp" />
+
+        <!-- الحالة -->
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Ready to learn your language"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:gravity="center" />
+
+        <!-- المؤقت التنازلي -->
+        <TextView
+            android:id="@+id/countdownText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="60:00"
+            android:textColor="#00D4FF"
+            android:textSize="42sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <!-- شرح ما يتعلمه البروتوكول -->
+        <TextView
+            android:id="@+id/learningDescText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="SoulSync is learning your unique language:\n• Hand tremor (m/s²)\n• Screen pressure\n• Tap speed (ms)\n• Typing rhythm\n• App-switching pace (ms)"
+            android:textColor="#8899AA"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:visibility="gone" />
+
+        <!-- الرقم الحي -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Rebound Metric"
+            android:textColor="#8899AA"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/reboundText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="0.00"
+            android:textColor="#00D4FF"
+            android:textSize="56sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="m/s²"
+            android:textColor="#8899AA"
+            android:textSize="14sp" />
+
+        <!-- مؤشر الإجهاد -->
+        <TextView
+            android:id="@+id/stressText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Stress Index: --"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp" />
+
+        <!-- الزر -->
+        <Button
+            android:id="@+id/startButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="START MONITORING"
+            android:backgroundTint="#00D4FF"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:padding="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Press once. Runs forever in the background."
+            android:textColor="#8899AA"
+            android:textSize="11sp"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
+
+    </LinearLayout>
+</ScrollView>
